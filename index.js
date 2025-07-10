@@ -1,6 +1,6 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { encoding_for_model } = require('gpt-tokenizer');
+import express from 'express';
+import bodyParser from 'body-parser';
+import { encode } from 'gpt-3-encoder';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -8,22 +8,16 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 app.post('/tokens', (req, res) => {
-  const { model = 'gpt-4o', prompt = '', completion = '' } = req.body;
+  const { prompt = '', completion = '' } = req.body;
 
   try {
-    const encoder = encoding_for_model(model);
-
-    const input_tokens = encoder.encode(prompt).length;
-    const output_tokens = encoder.encode(completion).length;
+    const input_tokens = encode(prompt).length;
+    const output_tokens = encode(completion).length;
     const total_tokens = input_tokens + output_tokens;
 
-    res.json({
-      input_tokens,
-      output_tokens,
-      total_tokens
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Erro ao calcular tokens', detalhes: err.message });
+    res.json({ input_tokens, output_tokens, total_tokens });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao calcular tokens', detalhes: error.message });
   }
 });
 
